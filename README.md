@@ -31,7 +31,7 @@ gcloud auth application-default login
 `YOUR_PROJECT_ID` 부분을 본인의 GCP 프로젝트 ID로 변경하여 실행합니다.
 ```bash
 export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
-export GOOGLE_CLOUD_LOCATION=us-central1
+export GOOGLE_CLOUD_LOCATION=global
 ```
 
 ---
@@ -44,7 +44,8 @@ Antigravity CLI를 설치합니다. (https://antigravity.google/download)
 ```bash
 # Antigravity CLI 다운로드 및 설치
 curl -fsSL https://antigravity.google/cli/install.sh | bash
-
+```
+```bash
 # PATH 환경 변수 등록 및 반영
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
 ```
@@ -116,13 +117,6 @@ agents-cli scaffold create customer-support-agent --prototype --yes
 프로젝트 디렉토리로 이동합니다:
 ```bash
 cd customer-support-agent
-```
-
-환경 변수 파일(`.env`) 로딩을 위해 `app/agent.py` 파일에 다음 내용을 추가합니다:
-
-```python
-from dotenv import load_dotenv
-load_dotenv()
 ```
 
 ---
