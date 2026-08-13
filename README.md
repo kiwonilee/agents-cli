@@ -1,12 +1,8 @@
 # Agents CLI in Agent Platform
 
-이 실습은 [Google Codelab: Agents CLI in Agent Platform](https://codelabs.developers.google.com/agents-cli-agent-platform/agents-cli-agent-platform)을 바탕으로 한 실습 가이드입니다.
+## 사전 준비 (Before You Begin)
 
----
-
-## 1. 사전 준비 (Before You Begin)
-
-### 1. Cloud Console 접근
+### 1. Cloud Console 접속
 1. Google Cloud Console 접속
 2. Cloud Shell 접속 (우측 상단)
 3. Cloud Shell Editor 활성화 (Cloud Shell 에서 open Editor)
@@ -197,34 +193,6 @@ agents-cli run \
   "What's the weather in San Francisco?"
 ```
 
-#### 옵션 3: Python SDK (`vertexai.agent_engines`)
-```python
-import vertexai
-from vertexai import agent_engines
-
-vertexai.init(project="YOUR_PROJECT_ID", location="us-central1")
-
-# deployment_metadata.json의 remote_agent_runtime_id 값 사용
-remote_agent = agent_engines.get(
-    "projects/.../locations/us-central1/reasoningEngines/..."
-)
-
-session = remote_agent.create_session(user_id="user-1")
-for event in remote_agent.stream_query(
-    user_id="user-1",
-    session_id=session["id"],
-    message="What's the weather in San Francisco?",
-):
-    print(event)
-```
-
-### 모니터링 도구 활용
-Agent Runtime은 Google Cloud의 모니터링 시스템과 자동으로 연동됩니다.
-
-- **Cloud Trace**: [Trace Explorer](https://console.cloud.google.com/traces/list)에서 `service.name = customer-support-agent` 필터링 후 모델 추론, 도구 호출, 지연 시간(Latency) 분석
-- **Cloud Logging**: [Logs Explorer](https://console.cloud.google.com/logs/query)에서 `resource.type="aiplatform.googleapis.com/ReasoningEngine"` 검색하여 에이전트 로그 확인
-- **Cloud Monitoring**: [Metrics Explorer](https://console.cloud.google.com/monitoring/metrics-explorer)에서 `request_count`, `request_latencies`, `instance_count` 지표 모니터링
-
 ---
 
 ## 9. MemoryBank 활성화
@@ -350,7 +318,7 @@ agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
 
 ## 11. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
 
-사내 구독 중인 Gemini Enterprise 환경에 에이전트를 마켓플레이스 형태로 게시할 수 있습니다.
+Gemini Enterprise 를 먼저 활성화 합니다.
 
 ### 1. 대상 앱 목록 조회
 ```bash
@@ -359,6 +327,7 @@ agents-cli publish gemini-enterprise --list
 
 ### 2. 에이전트 등록
 ```bash
+# agents-cli publish gemini-enterprise --list 명령어의 결과를 아래 환경변수에 등록
 export GE_APP_ID=YOUR_GE_APP_ID
 
 agents-cli publish gemini-enterprise \
@@ -417,3 +386,5 @@ EOF
 ```
 
 ---
+
+이 실습은 [Google Codelab: Agents CLI in Agent Platform](https://codelabs.developers.google.com/agents-cli-agent-platform/agents-cli-agent-platform)을 바탕으로 한 실습 가이드입니다.
