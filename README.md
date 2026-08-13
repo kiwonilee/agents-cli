@@ -8,9 +8,10 @@
 
 ### 1. Cloud Console 접근
 1. Google Cloud Console 접속
-2. CloudShell 연결 (Open Editor 버튼으로 Cloud Shell Editor에 들어가서 Terminal View 열어서 작업 추천)
-   - View - Toggle Hidden Files
-   - View - Terminal
+2. Cloud Shell 접속 (우측 상단)
+3. Cloud Shell Editor 활성화 (Cloud Shell 에서 open Editor)
+  - 상단 메뉴 - View - Terminal
+  - 상단 메뉴 - View - Toggle Hidden Files
 
 ### 2. 필수 API 활성화
 터미널에서 아래 명령을 실행하여 필요한 Cloud API를 활성화합니다.
@@ -20,6 +21,7 @@ gcloud services enable aiplatform.googleapis.com \
   cloudtrace.googleapis.com \
   cloudbuild.googleapis.com
 ```
+검색창에서 "Agent Platform" 검색 후 진입, 상단의 Enable APIs 를 선택해서 관련 API 들을 활성화
 
 ### 3. 인증 진행
 ```bash
@@ -96,25 +98,23 @@ agents-cli --version
 # 출력 예시: agents-cli, version 0.1.2
 ```
 
+agy 들어가서 skills 활성화 되어 있는지 확인 (/skills)
+
 ---
 
 ## 3. 에이전트 프로젝트 생성
-
-### 🤖 Coding Agent 모드
-Antigravity CLI에 다음과 같이 요청합니다:
-> "prototype 템플릿을 사용하여 customer-support-agent라는 이름의 새로운 ADK 에이전트 프로젝트를 생성해 줘."
-
-### 👤 수동 (Manual) 모드
-실습과 완벽히 일치하는 프로젝트 구조를 즉시 생성하기 위해 퀵 모드를 사용합니다:
+ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵 모드를 사용합니다:
 ```bash
 agents-cli scaffold create customer-support-agent --prototype --yes
 ```
 
+### 🤖 Coding Agent 모드 (선택사항)
+Antigravity CLI에 다음과 같이 요청합니다:
+> "prototype 템플릿을 사용하여 customer-support-agent라는 이름의 새로운 ADK 에이전트 프로젝트를 생성해 줘."
+
 ---
 
 ## 4. 에이전트 코드 탐색 (Explore the Agent Code)
-
-프로젝트 디렉토리로 이동합니다:
 ```bash
 cd customer-support-agent
 ```
@@ -132,19 +132,22 @@ agents-cli install
 *(내부적으로 `uv sync`를 실행하여 `.venv` 환경을 구축합니다.)*
 
 ### 2. Playground 실행
-- **🤖 Coding Agent**: Antigravity CLI에 다음과 같이 요청합니다:
+```bash
+agents-cli playground
+```
+
+- **🤖 Coding Agent 모드 (선택사항)**
+  Antigravity CLI에 다음과 같이 요청합니다:
   > "Start the playground for my agent"
-- **👤 수동 모드**:
-  ```bash
-  agents-cli playground
-  ```
+
 
 ### 3. 로컬 테스트
 1. 접속 주소: [http://127.0.0.1:8080/dev-ui/?app=app](http://127.0.0.1:8080/dev-ui/?app=app)
 2. 예시 질문 테스트:
    - `"What's the weather in San Francisco?"`
-   - `"What's the weather in Tokyo?"`
+   - `"도쿄의 날싸는 어때?"`
    - `"What time is it in San Francisco?"`
+   - `"서울의 날씨와 현재 시간을 알려주세요"`
 
 ---
 
@@ -171,7 +174,6 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 ---
 
 ## 7. 에이전트 평가 (Evaluate Your Agent)
-
 Agents CLI의 평가(Evaluation) 워크플로우는 데이터셋 정의, 에이전트 추론 실행(`eval generate`), 그리고 LLM-as-judge 기반 자동 채점(`eval grade`)으로 구성됩니다.
 
 ### 평가 디렉토리 구조 (`tests/eval/`)
@@ -226,30 +228,7 @@ Agents CLI의 평가(Evaluation) 워크플로우는 데이터셋 정의, 에이�
 
 ---
 
-### 2. 평가 설정 확인 (`tests/eval/eval_config.yaml`)
-`eval_config.yaml`은 평가 시 실행할 메트릭을 정의합니다:
-
-```yaml
-metrics_to_run:
-  - custom_response_quality
-
-custom_metrics:
-  - name: custom_response_quality
-    custom_function_file: response_quality.py
-  - name: agent_turn_count
-    custom_function: |
-      def evaluate(instance):
-          turns = (instance.get("agent_data") or {}).get("turns", [])
-          return {'score': len(turns)}
-```
-
----
-
-### 3. 평가 실행 (Evaluation Run)
-
-#### 🤖 Coding Agent 모드
-> "Run the evaluations for my agent"
-
+### 2. 평가 실행 (Evaluation Run)
 #### 👤 수동 (Manual) 모드
 
 **옵션 1: 추론 및 채점 일괄 실행 (권장)**
@@ -265,6 +244,11 @@ agents-cli eval generate
 # 2단계: 생성된 트레이스 및 응답 채점 (LLM-as-judge)
 agents-cli eval grade
 ```
+ 
+#### 🤖 Coding Agent 모드 (선택사항)
+  Antigravity CLI에 다음과 같이 요청합니다:
+> "Run the evaluations for my agent"
+
 
 #### 실행 결과 확인
 평가가 완료되면 케이스별 점수(Score 1~5)와 LLM 평가자의 피드백/이유(Explanation)가 터미널에 요약 출력됩니다.
@@ -275,35 +259,40 @@ agents-cli eval grade
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
-### 🤖 Coding Agent 모드
-> "Add Agent Runtime deployment to my project"
-
 ### 👤 수동 (Manual) 모드
 ```bash
 agents-cli scaffold enhance --deployment-target agent_runtime --yes
 ```
+
 
 #### 주요 변경점
 - **추가**: `app/agent_runtime_app.py`, `deployment_metadata.json`
 - **삭제**: `Dockerfile`, `app/fast_api_app.py` (관리형 환경이므로 커스텀 Dockerfile 불필요)
 - **보존**: `app/agent.py` (작성한 에이전트 코드는 변경 없이 그대로 유지)
 
+
+.env 파일에 다음 내용 추가
+```bash
+# Telemetry for ADK
+GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true
+OTEL_SEMCONV_STABILITY_OPT_IN="gen_ai_latest_experimental"
+OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=EVENT_ONLY
+```
+
+### 🤖 Coding Agent 모드 (선택사항)
+> "Add Agent Runtime deployment to my project"
+
+
 ---
 
 ## 9. Agent Runtime에 배포 (Deploy to Agent Runtime)
 
-### 1. 패키지 의존성 잠금
-```bash
-uv lock
-```
-
-### 2. 배포 실행
-`YOUR_PROJECT_ID`를 본인의 GCP 프로젝트 ID로 변경합니다.
+### 1. 배포 실행
 
 - **🤖 Coding Agent**: `"Deploy my agent to Agent Runtime in project YOUR_PROJECT_ID, region us-central1"`
 - **👤 수동 모드**:
   ```bash
-  agents-cli deploy --project YOUR_PROJECT_ID --region us-central1
+  agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
   ```
 
 > ⏱️ 최초 배포에는 약 **5~10분**이 소요됩니다. (이후 재배포는 더 빠르게 진행됩니다.)
