@@ -38,55 +38,7 @@ export GOOGLE_CLOUD_LOCATION=global
 
 ---
 
-## 2. Antigravity CLI 및 Agents CLI 설치
-
-### 1. Antigravity CLI 설치 (선택 사항)
-Antigravity CLI를 설치합니다. (https://antigravity.google/download)
-
-```bash
-# Antigravity CLI 다운로드 및 설치
-curl -fsSL https://antigravity.google/cli/install.sh | bash
-```
-```bash
-# PATH 환경 변수 등록 및 반영
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
-```
-
-#### Antigravity CLI 실행
-```bash
-agy
-# 메뉴 선택: Use a Google Cloud Project -> Continue with Google Cloud
-```
-
-#### ADK MCP (Model Context Protocol) 설정 (선택 사항)
-[ADK MCP 가이드](https://adk.dev/tutorials/coding-with-ai/#antigravity)에 따라 Antigravity CLI MCP 설정 파일(`~/.gemini/antigravity-cli/mcp_config.json`)을 생성합니다:
-
-```bash
-cat << 'EOF' > ~/.gemini/antigravity-cli/mcp_config.json
-{
-  "mcpServers": {
-    "adk-docs-mcp": {
-      "command": "uvx",
-      "args": [
-        "--with",
-        "mcp<2",
-        "--from",
-        "mcpdoc",
-        "mcpdoc",
-        "--urls",
-        "AgentDevelopmentKit:https://adk.dev/llms.txt",
-        "--transport",
-        "stdio"
-      ]
-    }
-  }
-}
-EOF
-```
-
----
-
-### 2. Agents CLI 설치 (Install Agents CLI)
+## 2. Agents CLI 설치 (Install Agents CLI)
 
 ```bash
 uvx google-agents-cli setup
@@ -98,8 +50,6 @@ agents-cli --version
 # 출력 예시: agents-cli, version 0.1.2
 ```
 
-agy 들어가서 skills 활성화 되어 있는지 확인 (/skills)
-
 ---
 
 ## 3. 에이전트 프로젝트 생성
@@ -107,10 +57,6 @@ ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵
 ```bash
 agents-cli scaffold create customer-support-agent --prototype --yes
 ```
-
-### 🤖 Coding Agent 모드 (선택사항)
-Antigravity CLI에 다음과 같이 요청합니다:
-> "prototype 템플릿을 사용하여 customer-support-agent라는 이름의 새로운 ADK 에이전트 프로젝트를 생성해 줘."
 
 ---
 
@@ -121,7 +67,7 @@ cd customer-support-agent
 
 ---
 
-## 5. Playground로 로컬 테스트 (Test Locally with Playground)
+## 5. 로컬 테스트 (Test Locally with Playground)
 
 대화형 UI를 통해 에이전트 동작을 테스트합니다.
 
@@ -136,16 +82,12 @@ agents-cli install
 agents-cli playground
 ```
 
-- **🤖 Coding Agent 모드 (선택사항)**
-  Antigravity CLI에 다음과 같이 요청합니다:
-  > "Start the playground for my agent"
-
 
 ### 3. 로컬 테스트
 1. 접속 주소: [http://127.0.0.1:8080/dev-ui/?app=app](http://127.0.0.1:8080/dev-ui/?app=app)
-2. 예시 질문 테스트:
+2. 샘플 질문 테스트:
    - `"What's the weather in San Francisco?"`
-   - `"도쿄의 날싸는 어때?"`
+   - `"도쿄의 날씨는 어때?"`
    - `"What time is it in San Francisco?"`
    - `"서울의 날씨와 현재 시간을 알려주세요"`
 
@@ -174,7 +116,6 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 ---
 
 ## 7. 에이전트 평가 (Evaluate Your Agent)
-Agents CLI의 평가(Evaluation) 워크플로우는 데이터셋 정의, 에이전트 추론 실행(`eval generate`), 그리고 LLM-as-judge 기반 자동 채점(`eval grade`)으로 구성됩니다.
 
 ### 평가 디렉토리 구조 (`tests/eval/`)
 - `tests/eval/datasets/`: 평가용 데이터셋 (JSON 형식)
@@ -183,53 +124,7 @@ Agents CLI의 평가(Evaluation) 워크플로우는 데이터셋 정의, 에이�
 
 ---
 
-### 1. 평가 데이터셋 수정
-`tests/eval/datasets/basic-dataset.json` 파일을 편집하여 에이전트 테스트 케이스 및 기대 응답(reference)을 작성합니다:
-
-```json
-{
-  "eval_cases": [
-    {
-      "eval_case_id": "weather_san_francisco",
-      "prompt": {
-        "role": "user",
-        "parts": [{"text": "What's the weather like in San Francisco?"}]
-      },
-      "reference": {
-        "response": {
-          "role": "model",
-          "parts": [{"text": "It's 60 degrees and foggy."}]
-        }
-      }
-    },
-    {
-      "eval_case_id": "weather_tokyo",
-      "prompt": {
-        "role": "user",
-        "parts": [{"text": "What's the weather in Tokyo?"}]
-      },
-      "reference": {
-        "response": {
-          "role": "model",
-          "parts": [{"text": "It's 90 degrees and sunny."}]
-        }
-      }
-    },
-    {
-      "eval_case_id": "time_san_francisco",
-      "prompt": {
-        "role": "user",
-        "parts": [{"text": "What time is it in San Francisco?"}]
-      }
-    }
-  ]
-}
-```
-
----
-
-### 2. 평가 실행 (Evaluation Run)
-#### 👤 수동 (Manual) 모드
+### 평가 실행 (Evaluation Run)
 
 **옵션 1: 추론 및 채점 일괄 실행 (권장)**
 ```bash
@@ -244,33 +139,22 @@ agents-cli eval generate
 # 2단계: 생성된 트레이스 및 응답 채점 (LLM-as-judge)
 agents-cli eval grade
 ```
- 
-#### 🤖 Coding Agent 모드 (선택사항)
-  Antigravity CLI에 다음과 같이 요청합니다:
-> "Run the evaluations for my agent"
-
 
 #### 실행 결과 확인
 평가가 완료되면 케이스별 점수(Score 1~5)와 LLM 평가자의 피드백/이유(Explanation)가 터미널에 요약 출력됩니다.
 
 ---
 
-## 8. Agent Runtime 배포 설정 추가 (Add Agent Runtime Deployment)
+## 8. Agent Runtime 배포
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
-### 👤 수동 (Manual) 모드
+### 1. 프로젝트 설정 파일 업데이트
 ```bash
 agents-cli scaffold enhance --deployment-target agent_runtime --yes
 ```
 
-
-#### 주요 변경점
-- **추가**: `app/agent_runtime_app.py`, `deployment_metadata.json`
-- **삭제**: `Dockerfile`, `app/fast_api_app.py` (관리형 환경이므로 커스텀 Dockerfile 불필요)
-- **보존**: `app/agent.py` (작성한 에이전트 코드는 변경 없이 그대로 유지)
-
-
+### 2. .env 파일 설정 추가 (Telemetry for ADK)
 .env 파일에 다음 내용 추가
 ```bash
 # Telemetry for ADK
@@ -279,18 +163,8 @@ OTEL_SEMCONV_STABILITY_OPT_IN="gen_ai_latest_experimental"
 OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=EVENT_ONLY
 ```
 
-### 🤖 Coding Agent 모드 (선택사항)
-> "Add Agent Runtime deployment to my project"
+### 3. 배포 실행
 
-
----
-
-## 9. Agent Runtime에 배포 (Deploy to Agent Runtime)
-
-### 1. 배포 실행
-
-- **🤖 Coding Agent**: `"Deploy my agent to Agent Runtime in project YOUR_PROJECT_ID, region us-central1"`
-- **👤 수동 모드**:
   ```bash
   agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
   ```
@@ -308,7 +182,7 @@ Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 
 ---
 
-## 10. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
+## 9. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
 
 ### 배포 에이전트 테스트 방법
 
@@ -356,7 +230,122 @@ Agent Runtime은 Google Cloud의 모니터링 시스템과 자동으로 연동�
 
 ---
 
-## 11. (선택) Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
+## 10. MemoryBank 활성화
+
+### app/agent.py에 Memory Bank 사용을 위한 콜백 함수 추가
+```python
+from google.adk.agents.callback_context import CallbackContext
+
+async def add_session_to_memory_callback(callback_context: CallbackContext):
+    await callback_context.add_session_to_memory()
+    return None
+```
+https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale/memory-bank/adk-quickstart#manage-memories
+```python
+root_agent = Agent(
+  name="root_agent",
+  model=Gemini(
+      model=MODEL,
+      retry_options=types.HttpRetryOptions(attempts=3),
+  ),
+  instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
+  # 다음 한 라인을 주석 처리하고 아래 두 라인을 추가
+  # tools=[get_weather, get_current_time],
+  tools=[get_weather, get_current_time, PreloadMemoryTool()],
+  after_agent_callback=add_session_to_memory_callback,
+)
+```
+최종 결과
+```python
+# ruff: noqa
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import datetime
+from zoneinfo import ZoneInfo
+
+from google.adk.agents import Agent
+from google.adk.apps import App
+from google.adk.models import Gemini
+from google.genai import types
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.tools import PreloadMemoryTool
+
+
+MODEL = "gemini-3.6-flash"
+
+### Memory Bank 사용을 위한 콜백 함수 추가
+async def add_session_to_memory_callback(callback_context: CallbackContext):
+    # Session 내의 정보들을 Memory Bank에 저장
+    await callback_context.add_session_to_memory()
+    return None
+
+def get_weather(query: str) -> str:
+    """Simulates a web search. Use it get information on weather.
+
+    Args:
+        query: A string containing the location to get weather information for.
+
+    Returns:
+        A string with the simulated weather information for the queried location.
+    """
+    if "sf" in query.lower() or "san francisco" in query.lower():
+        return "It's 60 degrees and foggy."
+    return "It's 90 degrees and sunny."
+
+
+def get_current_time(query: str) -> str:
+    """Simulates getting the current time for a city.
+
+    Args:
+        city: The name of the city to get the current time for.
+
+    Returns:
+        A string with the current time information.
+    """
+    if "sf" in query.lower() or "san francisco" in query.lower():
+        tz_identifier = "America/Los_Angeles"
+    else:
+        return f"Sorry, I don't have timezone information for query: {query}."
+
+    tz = ZoneInfo(tz_identifier)
+    now = datetime.datetime.now(tz)
+    return f"The current time for query {query} is {now.strftime('%Y-%m-%d %H:%M:%S %Z%z')}"
+
+
+root_agent = Agent(
+    name="root_agent",
+    model=Gemini(
+        model=MODEL,
+        retry_options=types.HttpRetryOptions(attempts=3),
+    ),
+    instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
+    ### PreloadMemoryTool() : 에이전트가 매 턴 시작 시 메모리를 검색하고 검색된 메모리를 시스템 메시지로 주입.
+    tools=[get_weather, get_current_time, PreloadMemoryTool()],
+    ### after_agent_callback: 에이전트 추론 완료 후 실행할 콜백 함수. 세션 메모리를 저장하는데 사용.
+    after_agent_callback=add_session_to_memory_callback,
+)
+
+app = App(
+    root_agent=root_agent,
+    name="app",
+)
+
+```
+---
+
+## 11. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
 
 사내 구독 중인 Gemini Enterprise 환경에 에이전트를 마켓플레이스 형태로 게시할 수 있습니다.
 
@@ -376,12 +365,50 @@ agents-cli publish gemini-enterprise \
 
 ---
 
-## 12. 마침 (Congratulations)
+## 12. (선택사항) Antigravity CLI
 
-🎉 **축하합니다!** Agents CLI와 ADK를 사용하여 에이전트 생성, 테스트, 평가 및 프로덕션 배포까지 모든 과정을 성공적으로 완료하셨습니다.
+### 1. Antigravity CLI 설치 (선택 사항)
+Antigravity CLI를 설치합니다. (https://antigravity.google/download)
 
-### 🚀 추가 학습 & 확장 방향
-- **도구 추가**: 데이터베이스 쿼리, REST API 통신 도구 추가
-- **RAG 연동**: 벡터 검색 기반 문서 기반 Q&A 에이전트 구현
-- **A2A (Agent-to-Agent)**: 에이전트 간 협업 아키텍처 구축
-- **공식 문서**: [Agents CLI Guide](https://google.github.io/agents-cli/) | [ADK Documentation](https://adk.dev/)
+```bash
+# Antigravity CLI 다운로드 및 설치
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+```bash
+# PATH 환경 변수 등록 및 반영
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+```
+
+#### Antigravity CLI 실행
+```bash
+agy
+# 메뉴 선택: Use a Google Cloud Project -> Continue with Google Cloud
+```
+
+#### ADK MCP (Model Context Protocol) 설정 (선택 사항)
+[ADK MCP 가이드](https://adk.dev/tutorials/coding-with-ai/#antigravity)에 따라 Antigravity CLI MCP 설정 파일(`~/.gemini/antigravity-cli/mcp_config.json`)을 생성합니다:
+
+```bash
+cat << 'EOF' > ~/.gemini/antigravity-cli/mcp_config.json
+{
+  "mcpServers": {
+    "adk-docs-mcp": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "--from",
+        "mcpdoc",
+        "mcpdoc",
+        "--urls",
+        "AgentDevelopmentKit:https://adk.dev/llms.txt",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+EOF
+```
+
+---
