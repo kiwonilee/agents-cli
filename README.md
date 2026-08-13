@@ -47,7 +47,7 @@ uvx google-agents-cli setup
 #### 설치 확인
 ```bash
 agents-cli --version
-# 출력 예시: agents-cli, version 0.1.2
+# 출력 예시: agents-cli, version 1.3.1
 ```
 
 ---
@@ -58,16 +58,13 @@ ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵
 agents-cli scaffold create customer-support-agent --prototype --yes
 ```
 
----
-
-## 4. 에이전트 코드 탐색 (Explore the Agent Code)
 ```bash
 cd customer-support-agent
 ```
 
 ---
 
-## 5. 로컬 테스트 (Test Locally with Playground)
+## 4. 로컬 테스트 (Test Locally with Playground)
 
 대화형 UI를 통해 에이전트 동작을 테스트합니다.
 
@@ -93,7 +90,7 @@ agents-cli playground
 
 ---
 
-## 6. CLI에서 실행 (Run from Command Line)
+## 5. CLI에서 실행 (Run from Command Line)
 
 웹 브라우저를 켜지 않고 터미널에서 빠르게 에이전트를 테스트합니다.
 
@@ -115,7 +112,7 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 
 ---
 
-## 7. 에이전트 평가 (Evaluate Your Agent)
+## 6. 에이전트 평가 (Evaluate Your Agent) (선택사항)
 
 ### 평가 디렉토리 구조 (`tests/eval/`)
 - `tests/eval/datasets/`: 평가용 데이터셋 (JSON 형식)
@@ -145,7 +142,7 @@ agents-cli eval grade
 
 ---
 
-## 8. Agent Runtime 배포
+## 7. Agent Runtime 배포
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
@@ -182,7 +179,7 @@ Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 
 ---
 
-## 9. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
+## 8. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
 
 ### 배포 에이전트 테스트 방법
 
@@ -230,7 +227,7 @@ Agent Runtime은 Google Cloud의 모니터링 시스템과 자동으로 연동�
 
 ---
 
-## 10. MemoryBank 활성화
+## 9. MemoryBank 활성화
 
 ### app/agent.py에 Memory Bank 사용을 위한 콜백 함수 추가
 ```python
@@ -255,6 +252,7 @@ root_agent = Agent(
   after_agent_callback=add_session_to_memory_callback,
 )
 ```
+
 최종 결과
 ```python
 # ruff: noqa
@@ -279,17 +277,17 @@ from google.adk.agents import Agent
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
+
 from google.adk.agents.callback_context import CallbackContext
-from google.adk.tools import PreloadMemoryTool
-
-
-MODEL = "gemini-3.6-flash"
+from google.adk.tools import preload_memory
 
 ### Memory Bank 사용을 위한 콜백 함수 추가
 async def add_session_to_memory_callback(callback_context: CallbackContext):
     # Session 내의 정보들을 Memory Bank에 저장
     await callback_context.add_session_to_memory()
     return None
+
+MODEL = "gemini-3.6-flash"
 
 def get_weather(query: str) -> str:
     """Simulates a web search. Use it get information on weather.
@@ -332,7 +330,7 @@ root_agent = Agent(
     ),
     instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
     ### PreloadMemoryTool() : 에이전트가 매 턴 시작 시 메모리를 검색하고 검색된 메모리를 시스템 메시지로 주입.
-    tools=[get_weather, get_current_time, PreloadMemoryTool()],
+    tools=[get_weather, get_current_time, preload_memory],
     ### after_agent_callback: 에이전트 추론 완료 후 실행할 콜백 함수. 세션 메모리를 저장하는데 사용.
     after_agent_callback=add_session_to_memory_callback,
 )
@@ -342,6 +340,11 @@ app = App(
     name="app",
 )
 
+```
+
+### 코드 변경한 부분을 재 배포
+```bash
+agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
 ```
 ---
 
@@ -356,8 +359,10 @@ agents-cli publish gemini-enterprise --list
 
 ### 2. 에이전트 등록
 ```bash
+export GE_APP_ID=YOUR_GE_APP_ID
+
 agents-cli publish gemini-enterprise \
-  --gemini-enterprise-app-id "projects/PROJECT_NUMBER/locations/global/collections/default_collection/engines/YOUR_APP_ID" \
+  --gemini-enterprise-app-id "${GE_APP_ID}" \
   --display-name "Customer Support Agent" \
   --description "Answers weather and time questions" \
   --tool-description "Use this tool to ask the customer support agent."
@@ -365,7 +370,7 @@ agents-cli publish gemini-enterprise \
 
 ---
 
-## 12. (선택사항) Antigravity CLI
+# (선택사항) Antigravity CLI
 
 ### 1. Antigravity CLI 설치 (선택 사항)
 Antigravity CLI를 설치합니다. (https://antigravity.google/download)
