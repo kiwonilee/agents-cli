@@ -447,14 +447,12 @@ app = App(
 ### 1. 의존성 패키지 설치
 ```bash
 agents-cli install
-```
-*(내부적으로 `uv sync`를 실행하여 `.venv` 환경을 구축합니다.)*
-
-### 2. Playground 실행
-```bash
 agents-cli playground
 ```
-
+### 2. 샘플 질문 테스트:
+   - `"The application crashes every time I upload photos."`
+   - `"I was charged twice and need a refund of $150."`
+   - `"Where is my package for order #8492?"`
 ---
 
 # (선택사항) Antigravity CLI
