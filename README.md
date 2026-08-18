@@ -198,30 +198,6 @@ agents-cli run \
 
 ### app/agent.py에 Memory Bank 사용을 위한 콜백 함수 추가
 ```python
-from google.adk.agents.callback_context import CallbackContext
-
-async def add_session_to_memory_callback(callback_context: CallbackContext):
-    await callback_context.add_session_to_memory()
-    return None
-```
-https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale/memory-bank/adk-quickstart#manage-memories
-```python
-root_agent = Agent(
-  name="root_agent",
-  model=Gemini(
-      model=MODEL,
-      retry_options=types.HttpRetryOptions(attempts=3),
-  ),
-  instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
-  # 다음 한 라인을 주석 처리하고 아래 두 라인을 추가
-  # tools=[get_weather, get_current_time],
-  tools=[get_weather, get_current_time, PreloadMemoryTool()],
-  after_agent_callback=add_session_to_memory_callback,
-)
-```
-
-최종 결과
-```python
 # ruff: noqa
 # Copyright 2026 Google LLC
 #
