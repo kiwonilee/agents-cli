@@ -107,37 +107,7 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 
 ---
 
-## 6. 에이전트 평가 (Evaluate Your Agent) (선택사항)
-
-### 평가 디렉토리 구조 (`tests/eval/`)
-- `tests/eval/datasets/`: 평가용 데이터셋 (JSON 형식)
-- `tests/eval/eval_config.yaml`: 평가 메트릭 및 평가기 설정
-- `tests/eval/response_quality.py`: LLM-as-judge 기반 응답 품질 채점 로직 (Score 1~5점)
-
----
-
-### 평가 실행 (Evaluation Run)
-
-**옵션 1: 추론 및 채점 일괄 실행 (권장)**
-```bash
-agents-cli eval run
-```
-
-**옵션 2: 2단계 분리 실행**
-```bash
-# 1단계: 평가 데이터셋 기반 에이전트 추론 실행 및 트레이스 생성
-agents-cli eval generate
-
-# 2단계: 생성된 트레이스 및 응답 채점 (LLM-as-judge)
-agents-cli eval grade
-```
-
-#### 실행 결과 확인
-평가가 완료되면 케이스별 점수(Score 1~5)와 LLM 평가자의 피드백/이유(Explanation)가 터미널에 요약 출력됩니다.
-
----
-
-## 7. Agent Runtime 배포
+## 6. Agent Runtime 배포
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
@@ -174,7 +144,7 @@ Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 
 ---
 
-## 8. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
+## 7. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
 
 ### 배포 에이전트 테스트 방법
 
@@ -194,7 +164,7 @@ agents-cli run \
 
 ---
 
-## 9. MemoryBank 활성화
+## 8. MemoryBank 활성화
 
 ### app/agent.py에 Memory Bank 사용을 위한 콜백 함수 추가
 ```python
@@ -291,7 +261,7 @@ agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
 ```
 ---
 
-## 11. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
+## 9. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
 
 Gemini Enterprise 를 먼저 활성화 합니다.
 
@@ -310,6 +280,179 @@ agents-cli publish gemini-enterprise \
   --display-name "Customer Support Agent" \
   --description "Answers weather and time questions" \
   --tool-description "Use this tool to ask the customer support agent."
+```
+---
+# (선택사항) Graph Workflow
+/app/agent.py 에 다음 정의
+```
+# ruff: noqa
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import asyncio
+import warnings
+import logging
+
+# Suppress internal SDK noise and warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="google.genai")
+warnings.filterwarnings("ignore", category=ResourceWarning)
+logging.getLogger("google.genai").setLevel(logging.ERROR)
+logging.getLogger("aiohttp").setLevel(logging.ERROR)
+
+from google.adk.agents import Agent
+from google.adk.apps import App
+from google.adk.events.event_actions import EventActions
+from google.adk.events import Event
+from google.adk.events.request_input import RequestInput
+from google.adk.workflow import START, JoinNode, Workflow, node
+from google.genai import types
+
+MODEL = "gemini-3.6-flash"
+
+# ===== Section 1: Parallel Data Fetchers =====
+async def fetch_profile(node_input):
+    await asyncio.sleep(0.3)
+    return {"name": "Alice", "tier": "Gold", "account_age": "2 years"}
+
+async def fetch_orders(node_input):
+    await asyncio.sleep(0.3)
+    return {"recent_orders": 3, "last_order": "Pro Laptop #8492"}
+
+async def fetch_billing(node_input):
+    await asyncio.sleep(0.3)
+    return {"outstanding_balance": 0, "payment_method": "Visa-4242"}
+
+# ===== Section 2: Classifier / Router =====
+def classify_and_route(node_input, ctx):
+    """Inspects user message in state and routes to the right specialist."""
+    if ctx.user_content and ctx.user_content.parts:
+        user_text = "".join(p.text for p in ctx.user_content.parts if p.text).lower()
+    elif "user_message" in ctx.state:
+        user_text = str(ctx.state["user_message"]).lower()
+    print(f"user_text : ${user_text}")
+    profile = node_input.get("fetch_profile", {})
+    print(f"profile : ${profile}")
+    context_summary = f"Customer: {profile.get('name', 'User')}, Tier: {profile.get('tier', 'Standard')}"
+    print(f"context_summary : ${context_summary}")
+    
+    if "approval_status" in ctx.state or "refund" in user_text or "charge" in user_text or "bill" in user_text:
+        route = "billing"
+    elif "crash" in user_text or "error" in user_text or "bug" in user_text:
+        route = "tech"
+    elif "track" in user_text or "package" in user_text or "delivery" in user_text:
+        route = "shipping"
+    else:
+        route = "general"
+        
+    return Event(output=context_summary, actions=EventActions(route=route))
+
+# ===== Section 3: Dynamic Tech Troubleshooting Node =====
+diagnose_agent = Agent(
+    name="tech_diagnostician",
+    model=MODEL,
+    instruction="Suggest ONE specific troubleshooting step in 1 sentence.",
+)
+
+@node(rerun_on_resume=True)
+async def dynamic_troubleshoot(ctx):
+    """Loops up to 2 attempts using ctx.run_node before escalating."""
+    for attempt in (1, 2):
+        print(f"  [Troubleshoot Loop] Attempt {attempt}...")
+        result = await ctx.run_node(diagnose_agent)
+        print(f"  [Diagnostician {attempt}]: {result}")
+    return "Troubleshooting attempts completed. Escalated to Tier 2."
+
+# ===== Section 4: Billing Agent & HITL Gate =====
+billing_agent = Agent(
+    name="billing_specialist",
+    model=MODEL,
+    instruction="Acknowledge the billing refund inquiry empathetically in 1 sentence.",
+)
+
+def check_refund_hitl(node_input, ctx):
+    """HITL Gate: If refund amount > $100, pause for human approval."""
+    already_approved = ctx.state.get("approval_status", None)
+    if already_approved == "approved":
+        return Event(output="Refund Processed: APPROVED by Manager", actions=EventActions(route="approved"))
+    elif already_approved == "rejected":
+        return Event(output="Refund Processed: REJECTED by Manager", actions=EventActions(route="rejected"))
+
+    refund_amount = ctx.state.get("refund_amount", 150)
+    ctx.state["pending_refund"] = refund_amount
+    ctx.state["needs_approval"] = True
+    print(f"  [HITL Gate] Refund of ${refund_amount} exceeds $100 auto-limit. Pausing for approval.")
+    return Event(output=f"PAUSED: Requires manager approval for ${refund_amount} refund")
+
+def process_approved(node_input):
+    return f"Final Status: {node_input}"
+
+# ===== Section 5: Shipping & General Agents =====
+shipping_agent = Agent(
+    name="shipping_specialist",
+    model=MODEL,
+    instruction="Provide a tracking status update for Order #8492 in 1 sentence.",
+)
+
+general_agent = Agent(
+    name="general_specialist",
+    model=MODEL,
+    instruction="Answer general support inquiry helpfully in 1 sentence.",
+)
+
+# ===== Section 6: Build Unified Graph =====
+join = JoinNode(name="data_joiner")
+
+root_agent = Workflow(
+    name="complete_support_system",
+    edges=[
+        # 1. Parallel Fan-out from START to data fetchers
+        (START, fetch_profile, join),
+        (START, fetch_orders, join),
+        (START, fetch_billing, join),
+        
+        # 2. Join -> Classify & Route
+        (join, classify_and_route),
+        
+        # 3. Conditional branches
+        (classify_and_route, {
+            "tech": dynamic_troubleshoot,
+            "billing": billing_agent,
+            "shipping": shipping_agent,
+            "general": general_agent,
+        }),
+        
+        # 4. Billing flows into HITL Gate
+        (billing_agent, check_refund_hitl),
+        (check_refund_hitl, {
+            "approved": process_approved,
+        }),
+    ],
+)
+
+app = App(
+    root_agent=root_agent,
+    name="app",
+)
+```
+### 1. 의존성 패키지 설치
+```bash
+agents-cli install
+```
+*(내부적으로 `uv sync`를 실행하여 `.venv` 환경을 구축합니다.)*
+
+### 2. Playground 실행
+```bash
+agents-cli playground
 ```
 
 ---
