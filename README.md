@@ -9,28 +9,27 @@
   - 상단 메뉴 - View - Terminal
   - 상단 메뉴 - View - Toggle Hidden Files
 
-### 2. 필수 API 활성화
-터미널에서 아래 명령을 실행하여 필요한 Cloud API를 활성화합니다.
-```bash
-gcloud services enable aiplatform.googleapis.com \
-  run.googleapis.com \
-  cloudtrace.googleapis.com \
-  cloudbuild.googleapis.com
-```
-검색창에서 "Agent Platform" 검색 후 진입, 상단의 Enable APIs 를 선택해서 관련 API 들을 활성화
-
-### 3. 인증 진행
+### 2. 인증 진행
 ```bash
 gcloud auth login
 gcloud auth application-default login
 ```
 
-### 4. 환경 변수 설정
+### 3. 환경 변수 설정
 `YOUR_PROJECT_ID` 부분을 본인의 GCP 프로젝트 ID로 변경하여 실행합니다.
 ```bash
 export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
 export GOOGLE_CLOUD_LOCATION=global
 ```
+
+### 4. 필수 API 활성화
+터미널에서 아래 명령을 실행하여 필요한 Cloud API를 활성화합니다.
+```bash
+gcloud services enable aiplatform.googleapis.com \
+  cloudtrace.googleapis.com \
+  cloudbuild.googleapis.com --project ${GOOGLE_CLOUD_PROJECT}
+```
+검색창에서 "Agent Platform" 검색 후 진입, 상단의 Enable APIs 를 선택해서 관련 API 들을 활성화
 
 ---
 
