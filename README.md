@@ -284,7 +284,7 @@ agents-cli publish gemini-enterprise \
 ---
 # (선택사항) Graph Workflow
 /app/agent.py 에 다음 정의
-```
+```python
 # ruff: noqa
 # Copyright 2026 Google LLC
 #
