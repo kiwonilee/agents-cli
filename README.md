@@ -18,7 +18,9 @@ gcloud auth application-default login
 ### 3. 환경 변수 설정
 `YOUR_PROJECT_ID` 부분을 본인의 GCP 프로젝트 ID로 변경하여 실행합니다.
 ```bash
-export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
+export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
+```
+```bash
 export GOOGLE_CLOUD_LOCATION=global
 ```
 
