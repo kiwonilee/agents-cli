@@ -1,21 +1,10 @@
 # Agents CLI in Agent Platform
 
 ## 사전 준비 (Before You Begin)
-
-### 1. Cloud Console 접속
+### 1. 환경 변수 설정
 1. Google Cloud Console 접속
 2. Cloud Shell 접속 (우측 상단)
-3. Cloud Shell Editor 활성화 (Cloud Shell 에서 open Editor)
-  - 상단 메뉴 - View - Terminal
-  - 상단 메뉴 - View - Toggle Hidden Files
-
-### 2. 인증 진행
-```bash
-gcloud auth login
-gcloud auth application-default login
-```
-
-### 3. 환경 변수 설정
+3. Shell Editor 에서 다음 커맨드 실행
 `YOUR_PROJECT_ID` 부분을 본인의 GCP 프로젝트 ID로 변경하여 실행합니다.
 ```bash
 export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
@@ -24,7 +13,7 @@ export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
 export GOOGLE_CLOUD_LOCATION=global
 ```
 
-### 4. 필수 API 활성화
+### 2. API 활성화
 터미널에서 아래 명령을 실행하여 필요한 Cloud API를 활성화합니다.
 ```bash
 gcloud services enable aiplatform.googleapis.com \
@@ -35,7 +24,7 @@ gcloud services enable aiplatform.googleapis.com \
 
 ---
 
-## 2. Agents CLI 설치 (Install Agents CLI)
+## 3. Agents CLI 설치 (Install Agents CLI)
 
 ```bash
 uvx google-agents-cli setup
@@ -49,7 +38,7 @@ agents-cli --version
 
 ---
 
-## 3. 에이전트 프로젝트 생성
+## 4. 에이전트 프로젝트 생성
 ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵 모드를 사용합니다:
 ```bash
 agents-cli scaffold create customer-support-agent --prototype --yes
@@ -59,9 +48,13 @@ agents-cli scaffold create customer-support-agent --prototype --yes
 cd customer-support-agent
 ```
 
+
+### 5. Cloud Shell Editor 를 통해 코드 확인
+Cloud Shell 에서 open Editor 선택 하여 Editor 에서 코드 확인
+
 ---
 
-## 4. 로컬 테스트 (Test Locally with Playground)
+## 6. 로컬 테스트 (Test Locally with Playground)
 
 대화형 UI를 통해 에이전트 동작을 테스트합니다.
 
@@ -87,7 +80,7 @@ agents-cli playground
 
 ---
 
-## 5. CLI에서 실행 (Run from Command Line)
+## 7. CLI에서 실행 (Run from Command Line)
 
 웹 브라우저를 켜지 않고 터미널에서 빠르게 에이전트를 테스트합니다.
 
@@ -109,7 +102,7 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 
 ---
 
-## 6. Agent Runtime 배포
+## 8. Agent Runtime 배포
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
@@ -121,13 +114,21 @@ agents-cli scaffold enhance --deployment-target agent_runtime --yes
 ### 2. .env 파일 설정 추가 (Telemetry for ADK)
 .env 파일에 다음 내용 추가
 ```bash
+cat << 'EOF' >> .env
 # Telemetry for ADK
 GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true
 OTEL_SEMCONV_STABILITY_OPT_IN="gen_ai_latest_experimental"
 OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=EVENT_ONLY
+EOF
 ```
 
-### 3. 배포 실행
+### 3. .env 파일 확인
+.env 파일에 다음 내용 추가
+```bash
+cat .env
+```
+
+### 4. 배포 실행
 
   ```bash
   agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
@@ -146,7 +147,7 @@ Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 
 ---
 
-## 7. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
+## 9. 배포된 에이전트 테스트 및 모니터링 (Test and Monitor Deployed Agent)
 
 ### 배포 에이전트 테스트 방법
 
@@ -166,7 +167,7 @@ agents-cli run \
 
 ---
 
-## 8. MemoryBank 활성화
+## 10. MemoryBank 활성화
 
 ### app/agent.py에 Memory Bank 사용을 위한 콜백 함수 추가
 ```python
@@ -263,7 +264,7 @@ agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
 ```
 ---
 
-## 9. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
+## 11. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
 
 Gemini Enterprise 를 먼저 활성화 합니다.
 
