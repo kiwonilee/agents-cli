@@ -25,6 +25,7 @@ gcloud services enable aiplatform.googleapis.com \
 ---
 
 ## 3. Agents CLI 설치 (Install Agents CLI)
+[https://google.github.io/agents-cli/](https://google.github.io/agents-cli/)
 
 ```bash
 uvx google-agents-cli setup
@@ -41,6 +42,7 @@ agents-cli --version
 ## 4. 에이전트 프로젝트 생성
 ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵 모드를 사용합니다:
 ```bash
+# 템플릿을 사용하여 새 프로젝트 생성
 agents-cli scaffold create customer-support-agent --prototype --yes
 ```
 
@@ -48,39 +50,50 @@ agents-cli scaffold create customer-support-agent --prototype --yes
 cd customer-support-agent
 ```
 
-
-### 5. Cloud Shell Editor 를 통해 코드 확인
-Cloud Shell 에서 open Editor 선택 하여 Editor 에서 코드 확인
+https://google.github.io/agents-cli/guide/project-structure/
+``bash
+ls -al
+# total 48
+# drwxrwxr-x  4 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 .
+# drwxr-x--- 11 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 ..
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  331 Oct  1 04:32 agents-cli-manifest.yaml
+# drwxrwxr-x  3 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 app
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  911 Oct  1 04:32 Dockerfile
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  390 Oct  1 04:32 .env
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  381 Oct  1 04:32 .env.example
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 3244 Oct  1 04:32 GEMINI.md
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 2745 Oct  1 04:32 .gitignore
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 2090 Oct  1 04:32 pyproject.toml
+# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 3619 Oct  1 04:32 README.md
+# drwxrwxr-x  5 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 tests
+```
 
 ---
 
-## 6. 로컬 테스트 (Test Locally with Playground)
+## 5. Cloud Shell Editor 를 통해 코드 확인
+Cloud Shell 의 우측 상단에서 Open Editor 선택 후 코드 확인
 
-대화형 UI를 통해 에이전트 동작을 테스트합니다.
+/app/agent.py
 
-### 1. 의존성 패키지 설치
-```bash
-agents-cli install
-```
-*(내부적으로 `uv sync`를 실행하여 `.venv` 환경을 구축합니다.)*
+---
 
-### 2. Playground 실행
+## 6. 로컬 테스트 - 대화형 GUI 로 에이전트 테스트
+
+로컬 환경에서 테스트를 위해 대화형 UI를 실행하고, 에이전트 동작을 테스트합니다.
+
 ```bash
 agents-cli playground
 ```
 
-
-### 3. 로컬 테스트
-1. 접속 주소: [http://127.0.0.1:8080/dev-ui/?app=app](http://127.0.0.1:8080/dev-ui/?app=app)
-2. 샘플 질문 테스트:
-   - `"What's the weather in San Francisco?"`
-   - `"도쿄의 날씨는 어때?"`
-   - `"What time is it in San Francisco?"`
-   - `"서울의 날씨와 현재 시간을 알려주세요"`
+샘플 질문 테스트:
+  - `"What's the weather in San Francisco?"`
+  - `"도쿄의 날씨는 어때?"`
+  - `"What time is it in San Francisco?"`
+  - `"서울의 날씨와 현재 시간을 알려주세요"`
 
 ---
 
-## 7. CLI에서 실행 (Run from Command Line)
+## 7. 로컬 테스트 - CLI 로 에이전트 테스트
 
 웹 브라우저를 켜지 않고 터미널에서 빠르게 에이전트를 테스트합니다.
 
@@ -89,7 +102,7 @@ agents-cli playground
 agents-cli run "What's the weather in San Francisco?"
 ```
 
-#### 실행 결과 예시
+### 실행 결과 예시
 ```text
 [user]: What's the weather in San Francisco?
 [root_agent]:
@@ -106,9 +119,10 @@ Session: fb30f7f7-147e-4697-8aaa-706d604589fa (resume with --session-id)
 
 Google Cloud의 서버리스 관리형 환경인 **Agent Runtime** 배포 아키텍처를 프로젝트에 반영합니다.
 
-### 1. 프로젝트 설정 파일 업데이트
+### 1. 배포 환경 업데이트
+배포 대상을 agent runtime 으로 설정 (if you started with --prototype)
 ```bash
-agents-cli scaffold enhance --deployment-target agent_runtime --yes
+agents-cli scaffold enhance --deployment-target agent_runtime
 ```
 
 ### 2. .env 파일 설정 추가 (Telemetry for ADK)
@@ -143,6 +157,8 @@ Agent Runtime ID: projects/.../locations/us-central1/reasoningEngines/XXXXXXXXXX
 Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 
 📊 Open Console Playground: https://console.cloud.google.com/vertex-ai/agents/agent-engines/locations/us-central1/agent-engines/XXXXXXXXXXXXXXXXXX/playground?project=YOUR_PROJECT_ID
+
+📊 View in Console: https://console.cloud.google.com/vertex-ai/agents/agent-engines/locations/us-central1/agent-engines/7453835065542311936?project=qwiklabs-gcp-02-9d3068d766d7
 ```
 
 ---
@@ -152,7 +168,8 @@ Service Account: service-XXXXXXXXX@gcp-sa-aiplatform-re.iam.gserviceaccount.com
 ### 배포 에이전트 테스트 방법
 
 #### 옵션 1: Console Playground (가장 쉬운 방법)
-배포 완료 메시지에 출력된 Google Cloud Console 링크를 클릭하여 브라우저 대화 UI에서 배포된 에이전트를 테스트합니다.
+- 배포 완료 메시지에 출력된 Google Cloud Console 링크(View in Console)를 클릭하여 Agent Platform 에 진입
+- Playground 항목에서 대화를 통해 에이전트를 테스트
 
 #### 옵션 2: agents-cli run --url
 터미널에서 원격 배포 엔드포인트로 직접 쿼리를 전송합니다:
@@ -262,21 +279,27 @@ app = App(
 ```bash
 agents-cli deploy --project $GOOGLE_CLOUD_PROJECT --region us-central1
 ```
+
+Revision 탭에서 재 배포된것 확인
+
 ---
 
-## 11. Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
+## 11. (Optional - 선택) Gemini Enterprise에 게시 (Publish to Gemini Enterprise)
 
-Gemini Enterprise 를 먼저 활성화 합니다.
+### 1. Gemini Enterprise app 생성
+검색창에서 Gemini Enterprise 를 검색해서 Gemini Enterprise 에 진입합니다.
+Create your first app 을 통해 app 을 생성 합니다.
 
-### 1. 대상 앱 목록 조회
+### 2. 대상 앱 목록 조회
 ```bash
 agents-cli publish gemini-enterprise --list
+# {"apps": [{"display_name": "gemini-enterprise-1790830998347", "location": "global", "name": "projects/399682065156/locations/global/collections/default_collection/engines/gemini-enterprise-17908309_1790830998347"}]}
 ```
 
-### 2. 에이전트 등록
+### 3. 에이전트 등록
 ```bash
-# agents-cli publish gemini-enterprise --list 명령어의 결과를 아래 환경변수에 등록
-export GE_APP_ID=YOUR_GE_APP_ID
+# agents-cli publish gemini-enterprise --list 명령어의 결과를 아래 환경변수에 등록 ("projects/399682065156/locations/global/collections/default_collection/engines/gemini-enterprise-17908309_1790830998347")
+export GE_APP_ID=[YOUR_GE_APP_ID]
 
 agents-cli publish gemini-enterprise \
   --gemini-enterprise-app-id "${GE_APP_ID}" \
@@ -284,7 +307,27 @@ agents-cli publish gemini-enterprise \
   --description "Answers weather and time questions" \
   --tool-description "Use this tool to ask the customer support agent."
 ```
+
+#### 완료 결과 출력 예시
+```text
+✅ Successfully created agent registration!
+   Agent Name:
+   projects/399682065156/locations/global/collections/default_collection/engines/gemini-enterprise-17908309_1790830998347/assistants/default_assistant/agents/5818257743899995143
+
+🔗 View in Console:
+   https://console.cloud.google.com/gemini-enterprise/locations/global/engines/gemini-enterprise-17908309_1790830998347/overview/dashboard?project=qwiklabs-gcp-02-9d3068d766d7
+{"status": "ok", "action": "created", "registration_type": "adk", "agent_name": "projects/399682065156/locations/global/collections/default_collection/engines/gemini-enterprise-17908309_1790830998347/assistants/default_assistant/agents/5818257743899995143", "gemini_enterprise_app_id": "projects/399682065156/locations/global/collections/default_collection/engines/gemini-enterprise-17908309_1790830998347", "console_url": "https://console.cloud.google.com/gemini-enterprise/locations/global/engines/gemini-enterprise-17908309_1790830998347/overview/dashboard?project=qwiklabs-gcp-02-9d3068d766d7"}
+```
+
+### 4. Gemini Enterprise 에서 배포한 에이전트 실행
+- 배포 완료 메시지에 출력된 Google Cloud Console 링크(View in Console)를 클릭
+- Preview 버튼을 클릭하여 Gemini Enterprise 진입
+- 방법1) "@Customer Support Agent" 태그 이후 프롬프트 입력하여 Agent 호출
+- 방법2) 좌측 Agents 에서 "Customer Support Agent" 선택 후 프롬프트 입력
+
+
 ---
+
 # (선택사항) Graph Workflow
 /app/agent.py 에 다음 정의
 ```python
@@ -449,7 +492,6 @@ app = App(
 ```
 ### 1. 의존성 패키지 설치
 ```bash
-agents-cli install
 agents-cli playground
 ```
 ### 2. 샘플 질문 테스트:
