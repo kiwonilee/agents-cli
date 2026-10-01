@@ -53,19 +53,6 @@ cd customer-support-agent
 https://google.github.io/agents-cli/guide/project-structure/
 ``bash
 ls -al
-# total 48
-# drwxrwxr-x  4 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 .
-# drwxr-x--- 11 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 ..
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  331 Oct  1 04:32 agents-cli-manifest.yaml
-# drwxrwxr-x  3 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 app
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  911 Oct  1 04:32 Dockerfile
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  390 Oct  1 04:32 .env
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858  381 Oct  1 04:32 .env.example
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 3244 Oct  1 04:32 GEMINI.md
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 2745 Oct  1 04:32 .gitignore
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 2090 Oct  1 04:32 pyproject.toml
-# -rw-r--r--  1 student_02_593be74f4858 student_02_593be74f4858 3619 Oct  1 04:32 README.md
-# drwxrwxr-x  5 student_02_593be74f4858 student_02_593be74f4858 4096 Oct  1 04:32 tests
 ```
 
 ---
