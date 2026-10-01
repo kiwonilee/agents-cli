@@ -45,13 +45,9 @@ ADK Agent 개발을 위한 프로젝트 구조를 즉시 생성하기 위해 퀵
 # 템플릿을 사용하여 새 프로젝트 생성
 agents-cli scaffold create customer-support-agent --prototype --yes
 ```
-
+생성된 폴더구조 확인 (https://google.github.io/agents-cli/guide/project-structure/)
 ```bash
 cd customer-support-agent
-```
-
-https://google.github.io/agents-cli/guide/project-structure/
-``bash
 ls -al
 ```
 
@@ -59,7 +55,6 @@ ls -al
 
 ## 5. Cloud Shell Editor 를 통해 코드 확인
 Cloud Shell 의 우측 상단에서 Open Editor 선택 후 코드 확인
-
 /app/agent.py
 
 ---
